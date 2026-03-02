@@ -1,0 +1,164 @@
+@startuml BiblioTech_Simple
+
+!define DONE #90EE90
+!define TODO #FFB6C1
+!define PARTIAL #FFD700
+
+title Diagramme Simplifié - BiblioTech Séance 3\nVue d'Ensemble des Fonctionnalités
+
+actor Utilisateur
+
+package "✅ Fonctionnalités EXISTANTES\n(Code actuel)" {
+  (Page d'accueil) as home DONE
+  (Liste livres basique) as list PARTIAL
+  (Détails livre) as show PARTIAL
+  (Recherche simple) as search DONE
+}
+
+package "❌ TP GUIDÉ M1: Contrôleur\n04-TP-PRATIQUE-CONTROLLERS.md\nÉtapes 1.1 à 1.9 (90 min)" {
+  (Créer LivreController\nresource) as gen TODO
+  (Liste avec pagination) as index TODO
+  (Créer livre) as create TODO
+  (Modifier livre) as edit TODO
+  (Supprimer livre) as delete TODO
+}
+
+package "❌ TP GUIDÉ M2: Vues\n04-TP-PRATIQUE-CONTROLLERS.md\nÉtapes 2.1 à 2.5 (30 min)" {
+  (Formulaire création) as formCreate TODO
+  (Formulaire édition) as formEdit TODO
+  (Interface Bootstrap) as ui TODO
+  (Modal confirmation) as modal TODO
+}
+
+package "❌ TP GUIDÉ M3: Validation\n04-TP-PRATIQUE-CONTROLLERS.md\nÉtapes 3.1 à 3.5 (30 min)" {
+  (Validation 8 règles) as validation TODO
+  (Messages flash) as flash TODO
+  (Tests CRUD) as tests TODO
+}
+
+package "❌ EXERCICES M1: Recherche\n05-TP-PRATIQUE-EXERCICES.md\nExercices 1.1 à 1.3 (15 min)" {
+  (Recherche avancée) as searchAdv TODO
+  (Filtres catégorie) as filters TODO
+  (URL persistantes) as urls TODO
+}
+
+package "❌ EXERCICES M2: Composants\n05-TP-PRATIQUE-EXERCICES.md\nExercices 2.1 à 2.2 (15 min)" {
+  (Composant LivreCard) as compCard TODO
+  (Composant Alert) as compAlert TODO
+}
+
+package "❌ EXERCICES M3: Validation\n05-TP-PRATIQUE-EXERCICES.md\nExercices 3.1 à 3.2 (15 min)" {
+  (Form Requests) as formReq TODO
+  (Règle ValidIsbn) as ruleISBN TODO
+}
+
+' Relations utilisateur
+Utilisateur --> home
+Utilisateur --> list
+Utilisateur --> show
+Utilisateur --> search
+
+Utilisateur --> create
+Utilisateur --> edit
+Utilisateur --> delete
+Utilisateur --> searchAdv
+
+' Relations entre fonctionnalités
+list ..> index : améliore
+show ..> ui : améliore
+create ..> formCreate : utilise
+edit ..> formEdit : utilise
+delete ..> modal : nécessite
+
+create ..> validation : nécessite
+edit ..> validation : nécessite
+create ..> flash : feedback
+edit ..> flash : feedback
+delete ..> flash : feedback
+
+index ..> searchAdv : étend
+index ..> filters : ajoute
+ui ..> compCard : utilise
+flash ..> compAlert : utilise
+
+validation ..> formReq : refactore
+validation ..> ruleISBN : utilise
+
+note as N1
+  <b>LÉGENDE</b>
+  
+  <back:DONE>   </back> = ✅ FAIT (4 fonctionnalités)
+  <back:PARTIAL>   </back> = ⚠️ PARTIEL (2 fonctionnalités)
+  <back:TODO>   </back> = ❌ À FAIRE (20 fonctionnalités)
+  
+  ---
+  
+  <b>Références Fichiers:</b>
+  • routes/web.php → Routes existantes
+  • LivreController.php → Contrôleur actuel
+  • 04-TP-PRATIQUE-CONTROLLERS.md → TP Guidé
+  • 05-TP-PRATIQUE-EXERCICES.md → Exercices
+  
+  ---
+  
+  <b>Progression:</b>
+  ✅ 25% terminé (Code actuel)
+  ❌ 75% à faire (Séance 3)
+end note
+
+note as N2
+  <b>ROUTES EXISTANTES</b>
+  (routes/web.php)
+  
+  ✅ GET / → AccueilController@index
+  ⚠️ GET /livres → LivreController@index
+  ⚠️ GET /livre/{id} → LivreController@show
+  ✅ GET /recherche → LivreController@search
+  
+  <b>ROUTES À CRÉER</b>
+  (TP Guidé, Étape 1.2)
+  
+  ❌ Route::resource('livres', LivreController::class)
+    → Génère 7 routes CRUD automatiquement
+end note
+
+note as N3
+  <b>MÉTHODES CONTROLLER EXISTANTES</b>
+  (LivreController.php)
+  
+  ⚠️ index() → Liste (sans pagination)
+  ⚠️ show($id) → Détail (sans Route Model Binding)
+  ✅ search() → Recherche (avec scope)
+  
+  <b>MÉTHODES À CRÉER</b>
+  (TP Guidé, Module 1)
+  
+  ❌ create() → Étape 1.5
+  ❌ store() → Étape 1.6
+  ❌ edit() → Étape 1.7
+  ❌ update() → Étape 1.8
+  ❌ destroy() → Étape 1.9
+end note
+
+note as N4
+  <b>VUES EXISTANTES</b>
+  (resources/views/livres/)
+  
+  ⚠️ index.blade.php → Liste simple
+  ⚠️ show.blade.php → Détail simple
+  ✅ search.blade.php → Recherche
+  
+  <b>VUES À CRÉER</b>
+  (TP Guidé, Module 2)
+  
+  ❌ create.blade.php → Étape 2.4
+  ❌ edit.blade.php → Étape 2.5
+  
+  <b>À AMÉLIORER</b>
+  
+  ⚠️ index.blade.php → Pagination, boutons
+  ⚠️ show.blade.php → Boutons actions
+  ⚠️ layouts/app.blade.php → Messages flash
+end note
+
+@enduml

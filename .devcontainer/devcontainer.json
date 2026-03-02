@@ -1,0 +1,55 @@
+{
+  "name": "📚 BiblioTech Laravel - SQLite First",
+  "image": "mcr.microsoft.com/devcontainers/php:1-8.3-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bmewburn.vscode-intelephense-client",
+        "onecentlin.laravel-blade",
+        "onecentlin.laravel5-snippets",
+        "ryannaddy.laravel-artisan",
+        "ms-vscode.vscode-json"
+      ],
+      "settings": {
+        "php.validate.executablePath": "/usr/local/bin/php",
+        "files.associations": {
+          "*.blade.php": "blade",
+          ".env*": "dotenv"
+        },
+        "emmet.includeLanguages": {
+          "blade": "html"
+        },
+        "editor.formatOnSave": true,
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  
+  "postCreateCommand": "bash install.sh",
+  
+  "forwardPorts": [8000, 8025],
+  "portsAttributes": {
+    "8000": {
+      "label": "🌐 BiblioTech App (SQLite)",
+      "onAutoForward": "openBrowser"
+    },
+    "8025": {
+      "label": "📧 MailHog (optionnel)"
+    }
+  },
+  
+  "remoteUser": "vscode",
+  
+  "containerEnv": {
+    "APP_ENV": "development",
+    "DB_CONNECTION": "sqlite"
+  }
+}

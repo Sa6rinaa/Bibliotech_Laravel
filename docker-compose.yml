@@ -1,0 +1,70 @@
+version: '3.8'
+
+# =====================================
+# Configuration Docker OPTIONNELLE
+# Par défaut BiblioTech utilise SQLite
+# Docker fournit PostgreSQL pour tests avancés
+# =====================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bibliotech_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      # PostgreSQL pour Docker (optionnel)
+      - DB_CONNECTION=pgsql
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=bibliotech
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=secret
+    depends_on:
+      - database
+      - mailhog
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    networks:
+      - bibliotech_network
+
+  # PostgreSQL : base avancée optionnelle
+  database:
+    image: postgres:15-alpine
+    container_name: bibliotech_db
+    environment:
+      POSTGRES_DB: bibliotech
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - bibliotech_network
+    profiles:
+      - database  # Optionnel : --profile database
+
+  # MailHog : tests emails  
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: bibliotech_mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Interface web
+    networks:
+      - bibliotech_network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  bibliotech_network:
+    driver: bridge
