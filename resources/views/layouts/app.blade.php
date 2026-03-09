@@ -98,12 +98,48 @@
                         </a>
                     </li>
                     <li class="nav-item">
+    <a class="nav-link text-white" href="{{ route('tarifs') }}">
+        <i class="fas fa-tags"></i> Tarifs
+    </a>
+</li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">
                             <i class="fas fa-info-circle"></i> À propos
                         </a>
                     </li>
                 </ul>
-                
+
+                {{-- Liens connexion/inscription ou profil utilisateur --}}
+                <ul class="navbar-nav ms-auto">
+                    @guest
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">Se connecter</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('register') }}">S'inscrire</a>
+                        </li>
+                    @else
+                        <li class="nav-item dropdown">
+                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                {{ Auth::user()->name }}
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li><a class="dropdown-item" href="{{ route('dashboard') }}">Tableau de bord</a></li>
+                                @if(Auth::user()->isAdmin())
+                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Admin</a></li>
+                                @endif
+                                <li>
+                                    <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                                        @csrf
+                                        <button class="dropdown-item" type="submit">Déconnexion</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    @endguest
+                </ul>
+
                 {{-- Barre de recherche --}}
                 <form class="d-flex" action="{{ route('livres.search') }}" method="GET">
                     <input class="form-control me-2" type="search" name="q" 

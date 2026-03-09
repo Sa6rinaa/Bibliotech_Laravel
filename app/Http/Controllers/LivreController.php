@@ -5,19 +5,33 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Livre;
 use App\Models\Categorie;
+use Illuminate\Support\Facades\Auth;
 
 class LivreController extends Controller
 {
     /**
-     * Affichage liste avec base de données SQLite
-     * SÉANCE 2 : Utiliser Eloquent pour récupérer les données depuis SQLite
+     * Liste des livres avec avantages abonnés
      */
     public function index()
     {
-        // Récupération des livres avec leurs catégories via Eloquent
-        $livres = Livre::with('categorie')->get();
+        $user = Auth::user();
+        $query = Livre::with('categorie');
 
-        // Récupération des catégories pour le filtre
+        // AVANTAGE ENFANT : Si c'est un compte enfant, on filtre par catégorie "Jeunesse"
+        if ($user && $user->parent_id) {
+            $query->whereHas('categorie', function($q) {
+                $q->where('nom', 'LIKE', '%Jeunesse%')
+                  ->orWhere('nom', 'LIKE', '%Enfant%');
+            });
+        }
+
+        // AVANTAGE ABONNÉ : Si pas abonné, on ne montre que les 3 premiers (Teasing)
+        if (!$user || !$user->is_active) {
+            $livres = $query->take(3)->get();
+        } else {
+            $livres = $query->get();
+        }
+
         $categories = Categorie::actives()->get();
 
         $statistiques = [
@@ -30,41 +44,47 @@ class LivreController extends Controller
             'livres' => $livres,
             'categories' => $categories,
             'stats' => $statistiques,
-            'total' => $livres->count()
+            'total' => $livres->count(),
+            'is_limited' => (!$user || !$user->is_active) // Pour afficher un message "Abonnez-vous"
         ]);
     }
 
     /**
-     * Affichage détail avec paramètre d'URL et Eloquent
-     * SÉANCE 2 : Utiliser Eloquent pour récupérer un enregistrement spécifique
+     * Détail du livre (Sécurisé par le middleware 'subscribed' dans web.php)
      */
     public function show($id)
     {
-        // Conversion de l'ID en entier pour éviter les erreurs
-        $id = (int) $id;
+        $livre = Livre::with('categorie')->findOrFail((int)$id);
 
-        // Récupération du livre avec sa catégorie via Eloquent
-        $livre = Livre::with('categorie')->findOrFail($id);
+        // LOGIQUE PARENTALE : Empêcher un enfant de voir une BD adulte via l'URL
+        if (Auth::user()->parent_id && str_contains(strtolower($livre->categorie->nom), 'adulte')) {
+            return redirect()->route('livres.index')->with('error', 'Contenu non autorisé pour ton âge.');
+        }
 
-        return view('livres.show', [
-            'livre' => $livre
-        ]);
+        return view('livres.show', ['livre' => $livre]);
     }
 
     /**
-     * Recherche de livres avec Eloquent
-     * SÉANCE 2 : Utiliser les scopes Eloquent pour la recherche
+     * Recherche
      */
     public function search(Request $request)
     {
         $query = $request->get('q', '');
+        $user = Auth::user();
 
-        // Utilisation des scopes Eloquent pour la recherche
-        $livres = Livre::with('categorie')
-            ->when($query, function ($queryBuilder, $searchTerm) {
-                return $queryBuilder->recherche($searchTerm);
-            })
-            ->get();
+        $livresQuery = Livre::with('categorie')
+            ->when($query, function ($qB, $searchTerm) {
+                return $qB->recherche($searchTerm);
+            });
+
+        // Même filtre de sécurité pour la recherche
+        if ($user && $user->parent_id) {
+            $livresQuery->whereHas('categorie', function($q) {
+                $q->where('nom', 'NOT LIKE', '%Adulte%');
+            });
+        }
+
+        $livres = $livresQuery->get();
 
         return view('livres.search', [
             'livres' => $livres,

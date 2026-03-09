@@ -17,8 +17,16 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            // Rôle utilisateur pour tests et autorisations
+            
+            // Rôles principaux
             $table->enum('role', ['user', 'admin', 'bibliothécaire'])->default('user');
+            
+            // --- NOUVEAUX CHAMPS ABONNEMENT ---
+            $table->enum('subscription_type', ['none', 'individuel', 'famille'])->default('none');
+            $table->foreignId('parent_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->boolean('is_active')->default(false);
+            // ----------------------------------
+
             $table->index('role');
             $table->rememberToken();
             $table->timestamps();

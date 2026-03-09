@@ -22,3 +22,8 @@
         </div>
     </div>
 </div>
+@if(auth()->check() && auth()->user()->is_active)
+    <a href="{{ route('livres.show', $livre->id) }}" class="btn btn-primary">Lire la BD</a>
+@else
+    <a href="{{ route('tarifs') }}" class="btn btn-warning">🔒 S'abonner pour lire</a>
+@endif

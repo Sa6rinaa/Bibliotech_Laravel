@@ -56,3 +56,10 @@
     @endif
 </div>
 @endsection
+@if(isset($is_limited) && $is_limited)
+    <div class="alert alert-warning text-center mt-4">
+        <h5>🚀 Envie d'en lire plus ?</h5>
+        <p>Vous ne voyez que 3 livres sur {{ $stats['totalLivres'] }}.</p>
+        <a href="{{ route('tarifs') }}" class="btn btn-primary">S'abonner maintenant</a>
+    </div>
+@endif
